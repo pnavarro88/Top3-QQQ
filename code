@@ -1,0 +1,250 @@
+import pandas as pd
+from pandas import DataFrame
+import pandas.io.data as web
+import datetime
+import numpy as np
+import matplotlib.pyplot as plt
+
+ticker_names = ['GOOG', 'AAPL', 'MSFT']
+ticker_names
+tickers = {}
+
+AAPL = pd.read_excel('AAPL_EOD.xlsx', 'Documents', index_col='Date[L]', parse_date=True)
+GOOG = pd.read_excel('GOOG_EOD.xlsx', 'GOOG_EOD', index_col='Date[L]', parse_date=True)
+MSFT = pd.read_excel('MSFT_EOD.xlsx', 'MSFT_EOD', index_col='Date[L]', parse_date=True)
+
+# ESTE TIENE EL PROBLEMA Q DESPUES DE EXCEL('AAPL_EOD.xlsx') tiene q ser el ticker de la accion. Arriba esta como seria para
+#cada una
+for ticker in ticker_names:
+  tickers[ticker] = 'pd.read_excel'
+
+tickers
+    
+"""
+del AAPL ['#RIC']
+del AAPL ['Time[L]']
+del AAPL ['Qualifiers']
+del AAPL ['Settle']
+AAPL = AAPL.dropna()
+
+del GOOG ['#RIC']
+del GOOG ['Time[L]']
+del GOOG ['Qualifiers']
+del GOOG ['Settle']
+GOOG = GOOG.dropna()
+
+del MSFT ['#RIC']
+del MSFT ['Time[L]']
+del MSFT ['Qualifiers']
+del MSFT ['Settle']
+MSFT = MSFT.dropna()
+"""
+#Esto es lo q esta intentando hacer este pedazo
+
+for ticker in tickers:
+    del ticker['#RIC']
+    del ticker['#RIC']
+    del ticker['Time[L]']
+    del ticker['Qualifiers']
+    del ticker['Settle']
+    
+for ticker in ticker_names:
+    ticker_names = ticker.dropna()
+    
+
+
+strat_AAPL = pd.DataFrame(index=AAPL.index)
+strat_AAPL['close_to_close'] = AAPL['Last'].pct_change()
+strat_AAPL['close_to_open'] = (AAPL['Open'] / AAPL['Last'].shift(1) - 1) 
+strat_AAPL['open_to_close'] = (AAPL['Last'] / AAPL['Open'] - 1)
+
+strat_GOOG = pd.DataFrame(index=GOOG.index)
+strat_GOOG['close_to_close'] = GOOG['Last'].pct_change()
+strat_GOOG['close_to_open'] = (GOOG['Open'] / GOOG['Last'].shift(1) - 1) 
+strat_GOOG['open_to_close'] = (GOOG['Last'] / GOOG['Open'] - 1)
+
+strat_MSFT = pd.DataFrame(index=MSFT.index)
+strat_MSFT['close_to_close'] = MSFT['Last'].pct_change()
+strat_MSFT['close_to_open'] = (MSFT['Open'] / MSFT['Last'].shift(1) - 1) 
+strat_MSFT['open_to_close'] = (MSFT['Last'] / MSFT['Open'] - 1)
+
+Top3 = strat_MSFT
+Top3['MSFT_C_2_C'] = strat_MSFT.close_to_close
+Top3['MSFT_C_2_O'] = strat_MSFT.close_to_open
+Top3['MSFT_O_2_C'] = strat_MSFT.open_to_close
+Top3['AAPL_C_2_C'] = strat_AAPL.close_to_close
+Top3['AAPL_C_2_O'] = strat_AAPL.close_to_open
+Top3['AAPL_O_2_C'] = strat_AAPL.open_to_close
+Top3['GOOG_C_2_C'] = strat_GOOG.close_to_close
+Top3['GOOG_C_2_O'] = strat_GOOG.close_to_open
+Top3['GOOG_O_2_C'] = strat_GOOG.open_to_close
+Top3.head()
+
+#Created the cols that contain the data that I will be needing.
+
+
+del Top3['close_to_close']
+del Top3['open_to_close']
+del Top3['close_to_open']
+
+Top3.head()
+
+Top3['MSFT_C_2_C'] = Top3.MSFT_C_2_C.fillna(0)
+Top3['MSFT_C_2_O'] = Top3.MSFT_C_2_O.fillna(0)
+Top3['MSFT_O_2_C'] = Top3.MSFT_O_2_C.fillna(0)
+Top3['AAPL_C_2_C'] = Top3.AAPL_C_2_C.fillna(0)
+Top3['AAPL_C_2_O'] = Top3.AAPL_C_2_O.fillna(0)
+Top3['AAPL_O_2_C'] = Top3.AAPL_O_2_C.fillna(0)
+Top3['GOOG_C_2_C'] = Top3.GOOG_C_2_C.fillna(0)
+Top3['GOOG_C_2_O'] = Top3.GOOG_C_2_O.fillna(0)
+Top3['GOOG_O_2_C'] = Top3.GOOG_O_2_C.fillna(0)
+
+#Setted all the NaN to 0 so we can add the values
+
+
+
+
+Top3.head()
+
+Top3['DAYS_PCT_CHG_O_2_C'] = ((Top3.MSFT_O_2_C + Top3.AAPL_O_2_C + Top3.GOOG_O_2_C) / 3 )
+Top3['DAYS_PCT_CHG_C_2_C'] = ((Top3.MSFT_C_2_C + Top3.AAPL_C_2_C + Top3.GOOG_C_2_C) / 3 )
+Top3['DAYS_PCT_CHG_C_2_O'] = ((Top3.MSFT_C_2_O + Top3.AAPL_C_2_O + Top3.GOOG_C_2_O) / 3 )
+Top3.head()
+#Now WE'VE createD the colS that will have the sums.
+
+
+Top3.MSFT_C_2_C.cumsum().plot(legend=True)
+Top3.AAPL_C_2_C.cumsum().plot(legend=True)
+Top3.GOOG_C_2_C.cumsum().plot()
+
+Top3.MSFT_O_2_C.cumsum().plot(legend=True)
+Top3.AAPL_O_2_C.cumsum().plot(legend=True)
+Top3.GOOG_O_2_C.cumsum().plot()
+
+Top3.MSFT_C_2_O.cumsum().plot(legend=True)
+Top3.AAPL_C_2_O.cumsum().plot(legend=True)
+Top3.GOOG_C_2_O.cumsum().plot()
+
+Top3.DAYS_PCT_CHG_C_2_O.cumsum().plot(legend=True)
+Top3.DAYS_PCT_CHG_C_2_C.cumsum().plot(legend=True)
+Top3.DAYS_PCT_CHG_O_2_C.cumsum().plot(title='Top 3 QQQ Components')
+
+Portfolio = Top3
+Portfolio.head()
+
+Starting_Size = 200000
+#Portfolio['Current_Value'] = (Starting_Size * Portfolio.DAYS_PCT_CHG_C_2_C + Starting_Size)
+# To run this we need to add first the current value and the day pl alone not in a function
+Portfolio['Day_PL'] = (Top3.DAYS_PCT_CHG_C_2_C * Portfolio.Top_3_QQQ_Components)
+Portfolio['Top_3_QQQ_Components'] = (Portfolio.Day_PL.cumsum() + Starting_Size)
+
+
+Portfolio.head()
+
+
+del Portfolio['MSFT_C_2_C']
+del Portfolio['MSFT_O_2_C']
+del Portfolio['MSFT_C_2_O']
+
+del Portfolio['AAPL_C_2_C']
+del Portfolio['AAPL_O_2_C']
+del Portfolio['AAPL_C_2_O']
+
+del Portfolio['GOOG_C_2_C']
+del Portfolio['GOOG_O_2_C']
+del Portfolio['GOOG_C_2_O']
+
+rest!
+
+ADBE = pd.read_excel('ADBE_EOD.xlsx', 'EOD Equities', index_col='Date[L]', parse_date=True)
+ADI = pd.read_excel('ADI_EOD.xlsx', 'ADI_EOD', index_col='Date[L]', parse_date=True)
+ADP = pd.read_excel('ADP_EOD.xlsx', 'ADP_EOD', index_col='Date[L]', parse_date=True)
+ADSK = pd.read_excel('ADSK_EOD.xlsx', 'ADSK_EOD', index_col='Date[L]', parse_date=True)
+AKAM = pd.read_excel('AKAM_EOD.xlsx', 'AKAM_EOD', index_col='Date[L]', parse_date=True)
+ALTR = pd.read_excel('ALTR_EOD.xlsx', 'ALTR_EOD', index_col='Date[L]', parse_date=True)
+ALXN = pd.read_excel('ALXN_EOD.xlsx', 'ALXN_EOD', index_col='Date[L]', parse_date=True)
+AMAT = pd.read_excel('AMAT_EOD.xlsx', 'AMAT_EOD', index_col='Date[L]', parse_date=True)
+AMGN = pd.read_excel('AMGN_EOD.xlsx', 'AMGN_EOD', index_col='Date[L]', parse_date=True)
+AMZN = pd.read_excel('AMZN_EOD.xlsx', 'AMZN_EOD', index_col='Date[L]', parse_date=True)
+ATVI = pd.read_excel('ATVI_EOD.xlsx', 'ATVI_EOD', index_col='Date[L]', parse_date=True)
+AVGO = pd.read_excel('AVGO_EOD.xlsx', 'AVGO_EOD', index_col='Date[L]', parse_date=True)
+BBBY = pd.read_excel('BBBY_EOD.xlsx', 'BBBY_EOD', index_col='Date[L]', parse_date=True)
+BIDU = pd.read_excel('BIDU_EOD.xlsx', 'BIDU_EOD', index_col='Date[L]', parse_date=True)
+BIIB = pd.read_excel('BIIB_EOD.xlsx', 'BIIB_EOD', index_col='Date[L]', parse_date=True)
+BRMC = pd.read_excel('BRMC_EOD.xlsx', 'BRMC_EOD', index_col='Date[L]', parse_date=True)
+CA = pd.read_excel('CA_EOD.xlsx', 'CA_EOD', index_col='Date[L]', parse_date=True)
+CELG = pd.read_excel('CELG_EOD.xlsx', 'CELG_EOD', index_col='Date[L]', parse_date=True)
+CERN = pd.read_excel('CERN_EOD.xlsx', 'CERN_EOD', index_col='Date[L]', parse_date=True)
+CHKP = pd.read_excel('CHKP_EOD.xlsx', 'CHKP_EOD', index_col='Date[L]', parse_date=True)
+CHRW = pd.read_excel('CHRW_EOD.xlsx', 'CHRW_EOD', index_col='Date[L]', parse_date=True)
+CHTR = pd.read_excel('CHTR_EOD.xlsx', 'CHTR_EOD', index_col='Date[L]', parse_date=True)
+COST = pd.read_excel('COST_EOD.xlsx', 'COST_EOD', index_col='Date[L]', parse_date=True)
+CSCO = pd.read_excel('CSCO_EOD.xlsx', 'CSCO_EOD', index_col='Date[L]', parse_date=True)
+CTRX = pd.read_excel('CTRX_EOD.xlsx', 'CTRX_EOD', index_col='Date[L]', parse_date=True)
+CTSH = pd.read_excel('CTSH_EOD.xlsx', 'CTSH_EOD', index_col='Date[L]', parse_date=True)
+CTXS = pd.read_excel('CTXS_EOD.xlsx', 'CTKS_EOD', index_col='Date[L]', parse_date=True)
+DISCA = pd.read_excel('DISCA_EOD.xlsx', 'DISCA_EOD', index_col='Date[L]', parse_date=True)
+DISH = pd.read_excel('DISH_EOD.xlsx', 'DISH_EOD', index_col='Date[L]', parse_date=True)
+DLTR = pd.read_excel('DLTR_EOD.xlsx', 'DLTR_EOD', index_col='Date[L]', parse_date=True)
+DTV = pd.read_excel('DTV_EOD.xlsx', 'DTV_EOD', index_col='Date[L]', parse_date=True)
+EBAY = pd.read_excel('EBAY_EOD.xlsx', 'EBAY_EOD', index_col='Date[L]', parse_date=True)
+EQIX = pd.read_excel('EQIX_EOD.xlsx', 'EQIX_EOD', index_col='Date[L]', parse_date=True)
+ESRX = pd.read_excel('ESRX_EOD.xlsx', 'ESRX_EOD', index_col='Date[L]', parse_date=True)
+EXPD = pd.read_excel('EXPD_EOD.xlsx', 'EXPD_EOD', index_col='Date[L]', parse_date=True)
+EXPE = pd.read_excel('EXPE_EOD.xlsx', 'EXPE_EOD', index_col='Date[L]', parse_date=True)
+FAST = pd.read_excel('FAST_EOD.xlsx', 'FAST_EOD', index_col='Date[L]', parse_date=True)
+FB = pd.read_excel('FB_EOD.xlsx', 'FB_EOD', index_col='Date[L]', parse_date=True)
+FFIV = pd.read_excel('FFIV_EOD.xlsx', 'FFIV_EOD', index_col='Date[L]', parse_date=True)
+FISV = pd.read_excel('FISV_EOD.xlsx', 'FISV_EOD', index_col='Date[L]', parse_date=True)
+FOXA = pd.read_excel('FOXA_EOD.xlsx', 'FOXA_EOD', index_col='Date[L]', parse_date=True)
+GILD = pd.read_excel('GILD_EOD.xlsx', 'GILD_EOD', index_col='Date[L]', parse_date=True)
+GMCR = pd.read_excel('GMCR_EOD.xlsx', 'GMCR_EOD', index_col='Date[L]', parse_date=True)
+GRMN = pd.read_excel('GRMN_EOD.xlsx', 'GRMN_EOD', index_col='Date[L]', parse_date=True)
+HSIC = pd.read_excel('HSIC_EOD.xlsx', 'HSIC_EOD', index_col='Date[L]', parse_date=True)
+ILMN = pd.read_excel('ILMN_EOD.xlsx', 'ILMN_EOD', index_col='Date[L]', parse_date=True)
+INTU = pd.read_excel('INTU_EOD.xlsx', 'INTU_EOD', index_col='Date[L]', parse_date=True)
+ISRG = pd.read_excel('ISRG_EOD.xlsx', 'ISRG_EOD', index_col='Date[L]', parse_date=True)
+KRFT = pd.read_excel('KRFT_EOD.xlsx', 'KRFT_EOD', index_col='Date[L]', parse_date=True)
+LBTYA = pd.read_excel('LBTYA_EOD.xlsx', 'LBTYA_EOD', index_col='Date[L]', parse_date=True)
+LINTA = pd.read_excel('LINTA_EOD.xlsx', 'LINTA_EOD', index_col='Date[L]', parse_date=True)
+LLTC = pd.read_excel('LLTC_EOD.xlsx', 'LLTC_EOD', index_col='Date[L]', parse_date=True)
+LMCA = pd.read_excel('LMCA_EOD.xlsx', 'LMCA_EOD', index_col='Date[L]', parse_date=True)
+MAR = pd.read_excel('MAR_EOD.xlsx', 'MAR_EOD', index_col='Date[L]', parse_date=True)
+MAT = pd.read_excel('MAT_EOD.xlsx', 'MAT_EOD', index_col='Date[L]', parse_date=True)
+MDLZ = pd.read_excel('MDLZ_EOD.xlsx', 'MDLZ_EOD', index_col='Date[L]', parse_date=True)
+MNST = pd.read_excel('MNST_EOD.xlsx', 'MNST_EOD', index_col='Date[L]', parse_date=True)
+MU = pd.read_excel('MU_EOD.xlsx', 'MU_EOD', index_col='Date[L]', parse_date=True)
+MXIM= pd.read_excel('MXIM_EOD.xlsx', 'MXIM_EOD', index_col='Date[L]', parse_date=True)
+MYL = pd.read_excel('MYL_EOD.xlsx', 'MYL_EOD', index_col='Date[L]', parse_date=True)
+NFLX = pd.read_excel('NFLX_EOD.xlsx', 'NFLX_EOD', index_col='Date[L]', parse_date=True)
+NTAP = pd.read_excel('NTAP_EOD.xlsx', 'NTAP_EOD', index_col='Date[L]', parse_date=True)
+NVDA = pd.read_excel('NVDA_EOD.xlsx', 'NVDA_EOD', index_col='Date[L]', parse_date=True)
+NXPI = pd.read_excel('NXPI_EOD.xlsx', 'NXPI_EOD', index_col='Date[L]', parse_date=True)
+ORLY = pd.read_excel('ORLY_EOD.xlsx', 'ORLY_EOD', index_col='Date[L]', parse_date=True)
+PAYX = pd.read_excel('PAYX_EOD.xlsx', 'PAYX_EOD', index_col='Date[L]', parse_date=True)
+PCLN = pd.read_excel('PCLN_EOD.xlsx', 'PCLN_EOD', index_col='Date[L]', parse_date=True)
+QCOM = pd.read_excel('QCOM_EOD.xlsx', 'QCOM_EOD', index_col='Date[L]', parse_date=True)
+REGN = pd.read_excel('REGN_EOD.xlsx', 'REGN_EOD', index_col='Date[L]', parse_date=True)
+ROST = pd.read_excel('ROST_EOD.xlsx', 'ROST_EOD', index_col='Date[L]', parse_date=True)
+SBAC = pd.read_excel('SBAC_EOD.xlsx', 'SBAC_EOD', index_col='Date[L]', parse_date=True)
+SBUX = pd.read_excel('SBUX_EOD.xlsx', 'SBUX_EOD', index_col='Date[L]', parse_date=True)
+SIRI = pd.read_excel('SIRI_EOD.xlsx', 'SIRI_EOD', index_col='Date[L]', parse_date=True)
+SNDK = pd.read_excel('SNDK_EOD.xlsx', 'SNDK_EOD', index_col='Date[L]', parse_date=True)
+SPLS = pd.read_excel('SPLS_EOD.xlsx', 'SPLS_EOD', index_col='Date[L]', parse_date=True)
+SRCL = pd.read_excel('SRCL_EOD.xlsx', 'SRCL_EOD', index_col='Date[L]', parse_date=True)
+STX = pd.read_excel('STX_EOD.xlsx', 'STX_EOD', index_col='Date[L]', parse_date=True)
+SYMC = pd.read_excel('SYMC_EOD.xlsx', 'SYMC_EOD', index_col='Date[L]', parse_date=True)
+TRIP = pd.read_excel('TRIP_EOD.xlsx', 'TRIP_EOD', index_col='Date[L]', parse_date=True)
+TSCO = pd.read_excel('TSCO_EOD.xlsx', 'TSCO_EOD', index_col='Date[L]', parse_date=True)
+TSLA = pd.read_excel('TSLA_EOD.xlsx', 'TSLA_EOD', index_col='Date[L]', parse_date=True)
+TXN = pd.read_excel('TXN_EOD.xlsx', 'TXN_EOD', index_col='Date[L]', parse_date=True)
+VIAB = pd.read_excel('VIAB_EOD.xlsx', 'VIAB_EOD', index_col='Date[L]', parse_date=True)
+VIP = pd.read_excel('VIP_EOD.xlsx', 'VIP_EOD', index_col='Date[L]', parse_date=True)
+VOD = pd.read_excel('VOD_EOD.xlsx', 'VOD_EOD', index_col='Date[L]', parse_date=True)
+VRSK = pd.read_excel('VRSK_EOD.xlsx', 'VRSK_EOD', index_col='Date[L]', parse_date=True)
+VRTX = pd.read_excel('VRTX_EOD.xlsx', 'VRTX_EOD', index_col='Date[L]', parse_date=True)
+WDC = pd.read_excel('WDC_EOD.xlsx', 'WDC_EOD', index_col='Date[L]', parse_date=True)
+WFM = pd.read_excel('WFM_EOD.xlsx', 'WFM_EOD', index_col='Date[L]', parse_date=True)
+WYNN = pd.read_excel('WYNN_EOD.xlsx', 'WYNN_EOD', index_col='Date[L]', parse_date=True)
+XLNX = pd.read_excel('XLNX_EOD.xlsx', 'XLNX_EOD', index_col='Date[L]', parse_date=True)
+
